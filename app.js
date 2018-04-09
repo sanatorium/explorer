@@ -1,6 +1,6 @@
 var express = require('express')
     path = require('path'),
-    chaincoinapi = require('chaincoin-node-api'),
+    chaincoinapi = require('./lib/coin-node-api'), //// modmod
     //// bitcoinapi = require('bitcoin-node-api'), //// modmod
     RpcClient = require('node-json-rpc2').Client, //// modmod
     favicon = require('static-favicon'),
@@ -34,6 +34,14 @@ if (settings.heavy != true) {
     'getmininginfo',
     'getdifficulty',
     'getconnectioncount',
+    'getmasternodelist',
+    'getmasternodelist_addr',
+    'getmasternodelist_full',
+    'getmasternodelist_info',
+    'getmasternodelist_activeseconds',
+    'getmasternodelist_lastseen',
+    'getmasternodelist_status',
+    'getmasternodelist_pubkey',
     'getmasternodecount',
     'getmasternodecountonline',
     'getmasternodelist',
@@ -68,6 +76,13 @@ if (settings.heavy != true) {
     'getmasternodecount',
     'getmasternodecountonline',
     'getmasternodelist',
+    'getmasternodelist_addr',
+    'getmasternodelist_full',
+    'getmasternodelist_info',
+    'getmasternodelist_activeseconds',
+    'getmasternodelist_lastseen',
+    'getmasternodelist_status',
+    'getmasternodelist_pubkey',
     'getvotelist',
     'getblockcount',
     'getblockhash',

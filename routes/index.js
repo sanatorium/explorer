@@ -187,12 +187,6 @@ router.get('/richlist', function(req, res) {
   }
 });
 
-router.get('/masternodes', function(req, res) { //// modmod route to /views/masternode.jade
-  if (settings.display.masternodes == true ) {
-    res.render('masternodes', {active: 'masternodes'});
-  }
-});
-
 router.get('/movement', function(req, res) {
   res.render('movement', {active: 'movement', flaga: settings.movement.low_flag, flagb: settings.movement.high_flag, min_amount:settings.movement.min_amount});
 });
@@ -288,6 +282,22 @@ router.get('/qr/:string', function(req, res) {
   }
 });
 
+//TODOTODO
+router.get('/masternodes', function(req, res) { //// modmod route to /views/masternode.jade
+  if (settings.display.masternodes == true ) {
+    //res.render('masternodes', {active: 'masternodes'});
+
+    lib.get_masternodelist_addr(function(masternodeslist_data){
+      console.log("**************masternodesonline:", masternodeslist_data);
+      res.send({ data: [{
+        //masternodeCountOnline: masternodesonline,
+        //masternodeCountOffline: masternodesoffline,
+      }]});
+    });
+
+  }
+});
+
 router.get('/ext/summary', function(req, res) {
   lib.get_difficulty(function(difficulty) {
     difficultyHybrid = ''
@@ -301,7 +311,8 @@ router.get('/ext/summary', function(req, res) {
         difficulty = difficulty['proof-of-stake'];
       }
     }
-//TODOTODO
+
+    //TODOTODO
     lib.get_hashrate(function(hashrate) {
       lib.get_connectioncount(function(connections){
         lib.get_masternodecount(function(masternodestotal){
