@@ -1,5 +1,11 @@
 Note: All updates require the explorer to be restarted
 
+(c) the sanity core developers
+1.7.1 -> 1.8.1
+* added masternodes tab
+* added discord
+
+(c) chaincoin
 1.7.0 -> 1.7.1
 * Added full masternodelist
 * Added masternode votes (undocumented)
@@ -11,6 +17,7 @@ Note: All updates require the explorer to be restarted
 * added website link (see settings.json.template)
 * moved logo to api page
 
+(c) iquidus
 1.6.1 -> 1.6.2
 * Added bitcointalk, slack, and github links (see settings.json.template)
 * Added super hacky forcesync scripts to enable syncing newest blocks during initial database sync
@@ -58,7 +65,7 @@ npm install
 1.3.2 -> 1.3.3
 * Restart explorer
 
-1.3.1 -> 1.3.2 
+1.3.1 -> 1.3.2
 * New database
 * Add new settings to settings.json (see settings.json.template)
   * heavy

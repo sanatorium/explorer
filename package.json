@@ -1,6 +1,6 @@
 {
-  "name": "explorer",
-  "version": "1.7.1",
+  "name": "sanityexplorer",
+  "version": "1.8.1",
   "private": true,
   "scripts": {
     "start": "node --stack-size=10000 ./bin/cluster",
@@ -21,7 +21,9 @@
     "mongodb": "2.0.45",
     "mongoose": "4.1.10",
     "markdown-js": "0.0.3",
-    "qr-image": "~2.0.0"
+    "qr-image": "~2.0.0",
+    "node-json-rpc2": "~1.1.0",
+    "portscanner": "2.1.1"
   },
   "devDependencies": {
     "jasmine": "~2.1.0"

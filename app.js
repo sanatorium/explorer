@@ -1,25 +1,50 @@
 var express = require('express')
-  , path = require('path')
-  , chaincoinapi = require('chaincoin-node-api')
-  , favicon = require('static-favicon')
-  , logger = require('morgan')
-  , cookieParser = require('cookie-parser')
-  , bodyParser = require('body-parser')
-  , settings = require('./lib/settings')
-  , routes = require('./routes/index')
-  , lib = require('./lib/explorer')
-  , db = require('./lib/database')
-  , locale = require('./lib/locale')
-  , request = require('request');
+    path = require('path'),
+    chaincoinapi = require('chaincoin-node-api'),
+    //// bitcoinapi = require('bitcoin-node-api'), //// modmod
+    RpcClient = require('node-json-rpc2').Client, //// modmod
+    favicon = require('static-favicon'),
+    logger = require('morgan'),
+    cookieParser = require('cookie-parser'),
+    bodyParser = require('body-parser'),
+    settings = require('./lib/settings'),
+    routes = require('./routes/index'),
+    lib = require('./lib/explorer'),
+    db = require('./lib/database'),
+    locale = require('./lib/locale'),
+    mn = require('./lib/masternode'),
+    request = require('request');
 
 var app = express();
 
+// bitcoinapi
+//// bitcoinapi.setWalletDetails(settings.wallet);
+
 // chaincoinapi
 chaincoinapi.setWalletDetails(settings.wallet);
+
+// used for extending with masternode commmands
+var client = new RpcClient(settings.wallet); //// modmod
+
 if (settings.heavy != true) {
-  chaincoinapi.setAccess('only', ['getinfo', 'getnetworkhashps', 'getmininginfo','getdifficulty', 'getconnectioncount',
-  'getmasternodecount', 'getmasternodecountonline', 'getmasternodelist', 'getvotelist', 'getblockcount', 'getblockhash', 'getblock', 'getrawtransaction', 
-  'getpeerinfo', 'gettxoutsetinfo']);
+  chaincoinapi.setAccess('only',
+  [
+    'getinfo',
+    'getnetworkhashps',
+    'getmininginfo',
+    'getdifficulty',
+    'getconnectioncount',
+    'getmasternodecount',
+    'getmasternodecountonline',
+    'getmasternodelist',
+    'getvotelist',
+    'getblockcount',
+    'getblockhash',
+    'getblock',
+    'getrawtransaction',
+    'getpeerinfo',
+    'gettxoutsetinfo'
+  ]);
 } else {
   // enable additional heavy api calls
   /*
@@ -33,11 +58,35 @@ if (settings.heavy != true) {
     getsupply - Returns the current money supply.
     getmaxmoney - Returns the maximum possible money supply.
   */
-  chaincoinapi.setAccess('only', ['getinfo', 'getstakinginfo', 'getnetworkhashps', 'getdifficulty', 'getconnectioncount',
-    'getmasternodecount', 'getmasternodecountonline', 'getmasternodelist', 'getvotelist', 'getblockcount', 'getblockhash', 
-    'getblock', 'getrawtransaction', 'getmaxmoney', 'getvote', 'getmaxvote', 'getphase', 'getreward', 'getpeerinfo', 
-    'getnextrewardestimate', 'getnextrewardwhenstr', 'getnextrewardwhensec', 'getsupply', 'gettxoutsetinfo']);
+  chaincoinapi.setAccess('only',
+  [
+    'getinfo',
+    'getstakinginfo',
+    'getnetworkhashps',
+    'getdifficulty',
+    'getconnectioncount',
+    'getmasternodecount',
+    'getmasternodecountonline',
+    'getmasternodelist',
+    'getvotelist',
+    'getblockcount',
+    'getblockhash',
+    'getblock',
+    'getrawtransaction',
+    'getmaxmoney',
+    'getvote',
+    'getmaxvote',
+    'getphase',
+    'getreward',
+    'getpeerinfo',
+    'getnextrewardestimate',
+    'getnextrewardwhenstr',
+    'getnextrewardwhensec',
+    'getsupply',
+    'gettxoutsetinfo'
+  ]);
 }
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -50,8 +99,26 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // routes
+app.use('/api/getmasternodes', function(req, res) { //// modmod
+  var mn = function(mnp) {
+    client.call({method: 'masternode', params: mnp}, function(ierr, ires) {
+      if (ierr) {
+        console.log(ierr);
+        return;
+      }
+      res.send(ires.result);
+    });
+  }
+  mn(
+    [
+      'list',
+      'pubkey'
+    ])
+});
+
 app.use('/api', chaincoinapi.app);
 app.use('/', routes);
+
 app.use('/ext/getmoneysupply', function(req,res){
   lib.get_supply(function(supply){
     res.send(' '+supply);
@@ -107,6 +174,12 @@ app.use('/ext/connections', function(req,res){
   });
 });
 
+app.use('/ext/ismasternodeopen/:host/:port', function(req, res) { //// modmod
+  mn.is_open(req.param('host'), req.param('port'), function(perror, pstatus) {
+    res.send(pstatus == 'open' ? 'true' : 'false');
+  });
+});
+
 // locals
 app.set('title', settings.title);
 app.set('symbol', settings.symbol);
@@ -119,6 +192,7 @@ app.set('facebook', settings.facebook);
 app.set('googleplus', settings.googleplus);
 app.set('bitcointalk', settings.bitcointalk);
 app.set('slack', settings.slack);
+app.set('discord', settings.discord);
 app.set('github', settings.github);
 app.set('website', settings.website);
 app.set('genesis_block', settings.genesis_block);

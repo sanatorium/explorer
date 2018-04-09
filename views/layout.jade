@@ -114,6 +114,11 @@ html
                 a.navbar-link(href='/network')
                   span.fa.fa-share-alt
                   span.menu-text #{settings.locale.menu_network}
+            if settings.display.masternodes == true
+              li#masternodes
+                a.navbar-link(href='/masternodes')
+                  span.fa.fa-server
+                  span.menu-text #{settings.locale.menu_masternodes}
             if settings.display.richlist == true
               li#richlist
                 a.navbar-link(href='/richlist')
@@ -149,7 +154,6 @@ html
                 strong #{settings.locale.network} (H/s)
             .panel-body
               #hashratepanel
-                span.glyphicon.fa.fa-gears
                 if settings.index.difficulty == 'Hybrid'
                   label#hashrate -
                   <br>
@@ -162,7 +166,6 @@ html
               strong #{settings.locale.difficulty}
             .panel-body
               #difficultypanel
-                span.glyphicon.fa.fa-sliders
                 if settings.index.difficulty == 'Hybrid'
                   label#difficulty -
                   <br>
@@ -183,7 +186,7 @@ html
         .col-md-2
           .panel.panel-default.hidden-sm.hidden-xs
             .panel-heading
-              strong #{settings.locale.ex_supply} (#{settings.symbol})
+              strong #{settings.locale.ex_supply}
             .panel-body
               #supplypanel
                 span.glyphicon.fa.fa-pie-chart
@@ -225,6 +228,11 @@ html
             li.pull-left
               a#slack-icon(href="#{settings.slack}", target='_blank')
                 span.glyphicon.fa.fa-slack
+        if settings.display.discord
+          ul.nav.navbar-nav
+            li.pull-left
+              a#discord-icon(href="#{settings.discord}", target='_blank')
+                span.glyphicon.fa.fa-discord
         if settings.display.twitter
           ul.nav.navbar-nav
             li.pull-left

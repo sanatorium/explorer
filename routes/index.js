@@ -4,6 +4,7 @@ var express = require('express')
   , locale = require('../lib/locale')
   , db = require('../lib/database')
   , lib = require('../lib/explorer')
+  //, coinapi = require('../lib/coinapi')
   , qr = require('qr-image');
 
 function route_get_block(res, blockhash) {
@@ -186,6 +187,12 @@ router.get('/richlist', function(req, res) {
   }
 });
 
+router.get('/masternodes', function(req, res) { //// modmod route to /views/masternode.jade
+  if (settings.display.masternodes == true ) {
+    res.render('masternodes', {active: 'masternodes'});
+  }
+});
+
 router.get('/movement', function(req, res) {
   res.render('movement', {active: 'movement', flaga: settings.movement.low_flag, flagb: settings.movement.high_flag, min_amount:settings.movement.min_amount});
 });
@@ -294,6 +301,7 @@ router.get('/ext/summary', function(req, res) {
         difficulty = difficulty['proof-of-stake'];
       }
     }
+//TODOTODO
     lib.get_hashrate(function(hashrate) {
       lib.get_connectioncount(function(connections){
         lib.get_masternodecount(function(masternodestotal){

@@ -10,6 +10,7 @@
     "menu_markets": "Markets",
     "menu_richlist": "Top 100",
     "menu_reward": "Reward",
+    "menu_masternodes": "Masternodes",
     "menu_movement": "Movement",
     "menu_node": "Nodes",
     "menu_network": "Network",
@@ -43,7 +44,7 @@
 
     // global
     "difficulty": "Difficulty",
-    "masternodecount": "Master Nodes",
+    "masternodecount": "Masternodes",
     "network": "Network",
     "height": "Height",
     "timestamp": "Timestamp",
@@ -76,6 +77,10 @@
     "rl_top100": "Top 76-100",
     "rl_hundredplus": "101+",
 
+    "mn": "Masternodes",
+    "mn_pubkey": "Pubkey",
+    "mn_status": "Status",
+
     "net_connections": "Connections",
     "net_address": "Address",
     "net_protocol": "Protocol",
@@ -98,6 +103,7 @@
     "api_getblockhash": "Returns the hash of the block at ; index 0 is the genesis block.",
     "api_getblock": "Returns information about the block with the given hash.",
     "api_getrawtransaction": "Returns raw transaction representation for given transaction id. decrypt can be set to 0(false) or 1(true).",
+    "api_getmasternodes": "Returns a list of the masternodes currently detected on the network.",
     "api_getmaxmoney": "Returns the maximum possible money supply.",
     "api_getmaxvote": "Returns the maximum allowed vote for the current phase of voting.",
     "api_getvote": "Returns the current block reward vote setting.",
