@@ -3,46 +3,108 @@ extends layout
 block content
   script.
     $(document).ready(function(){
+        // result from routes/index.js after browsing to localhost/masternodes -> router.get('/masternodes'
+        //var mnList = {_fromRoutes__mn_list};
+        //code.formattedDebug #{mnList};
+        //div
+        //   = mnList
+        //div
+
       var iconChecking = '<i class="mn-status fa fa-refresh fa-spin fa-fw"></i>';
       var iconOpen = '<i class="mn-status-open fa fa-check-square"></i>';
       var iconClosed = '<i class="mn-status-closed fa fa-exclamation-triangle"></i>';
 
-      $('#masternodes-table').dataTable({
+      var mtable = $('#masternodes-table').dataTable({
         autoWidth: true,
         searching: false,
         ordering: false,
         responsive: true,
         lengthChange: true,
         processing: true,
+        // ***
+        // *** api call via app.js -> app.use('/ext/_fromAppToJade_getmasternodelist_full'
+        // ***
         ajax: {
-          url: '/api/getmasternodes',
-          dataSrc: function ( json ) {
-            var masternodes = [];
+          url: '/ext/getmasternodelist_full',
+          dataSrc: function ( json ) { // *** data from app.js -> res.send( {data: mnlist} );
+            // console.log("zzz:", json.data); // log to client console
+            // json.data[].key
+            // json.data[].valueraw
 
-            Object.keys(json).forEach(function(e) {
-              masternodes.push({'address': e, 'pubkey': json[e], 'status': iconChecking});
+            //Object.keys(json).forEach(function(e) {
+            //  tmp.push({'address': e, 'pubkey': json[e], 'status': iconChecking});
+            //});
+            
+            /*
+            mnlist.push({
+                'key': '',
+                'valueraw': '',
+                
+                'status': '',
+                'protocol': '',
+                'payee': '',
+                'lastseen': '',
+                'lastseenreadable': '',
+                'activeseconds': '',
+                'activesecondsreadable': '',
+                'lastpaidtime': '',
+                'lastpaidblock': '',
+                'ip': '',
             });
-
-            return masternodes;
+            [ 'NEW_START_REQUIRED',
+            '70208',
+            'SeNDDv3Za6sLnEBRQhogCh9NeefHgQQn4S',
+            '1523311296',
+            '118842',
+            '1523302317',
+            '1866',
+            '185.203.119.172:9999' ]
+            */
+            // push to table-format
+            var tmp = [];
+            for ( var i = 0; i < json.data.length; i++ ) {
+              tmp.push({
+                'jade_ip': json.data[i].ip, 
+                'jade_message': "<label class='label label-default'>" + json.data[i].status + "</label>",
+                'jade_protocol': json.data[i].protocol,
+                'jade_lastseen': "<label class='label label-default' title='" + json.data[i].lastseenreadable + "'>" + json.data[i].lastseen + "</label>", 
+                'jade_activeseconds': "<label class='label label-default' title='" + json.data[i].activesecondsreadable+ "'>" + json.data[i].activeseconds + "</label>",
+                'jade_portscannerstatus': iconChecking,
+                });
+            }
+            if (tmp.length <= 0) {
+              tmp.push({
+                'jade_ip': '',
+                'jade_message': '',
+                'jade_protocol': '',
+                'jade_lastseen': '',
+                'jade_activeseconds': '',
+                'jade_portscannerstatus': '',
+              });  
+            }
+            return tmp;
           }
         },
         columns: [
-          { data: 'address', width: '45%' },
-          { data: 'pubkey', width: '45%' },
-          { data: 'status', width: '10%' }
+          { data: 'jade_portscannerstatus', width: '2%' },
+          { data: 'jade_ip', width: '45%' },
+          { data: 'jade_protocol', width: '8%' },
+          { data: 'jade_activeseconds', width: '10%' },
+          { data: 'jade_lastseen', width: '10%' },
+          { data: 'jade_message', width: '25%' },
         ],
         initComplete: function() {
           this.api().rows().eq(0).each(function(index) {
             var row = this.row(index);
-            var host = row.data()['address'].split(':')[0];
-            var port = row.data()['address'].split(':')[1];
-            var destination = '/ext/ismasternodeopen/' + host + '/' + port;
-
+            // check ip:port with portscanner -> change icon-symbol: iconChecking
+            var host = row.data()['jade_ip'].split(':')[0];
+            var port = row.data()['jade_ip'].split(':')[1];
+            var destination = '/ext/checkport/' + host + '/' + port;
             $.ajax({url: destination, success: function(result) {
               if (result === 'true') {
-                row.data()['status'] = row.data()['status'].replace(iconChecking, iconOpen);
+                row.data()['jade_portscannerstatus'] = row.data()['jade_portscannerstatus'].replace(iconChecking, iconOpen);
               } else {
-                row.data()['status'] = row.data()['status'].replace(iconChecking, iconClosed);
+                row.data()['jade_portscannerstatus'] = row.data()['jade_portscannerstatus'].replace(iconChecking, iconClosed);
               }
               row.invalidate();
             }});
@@ -53,11 +115,14 @@ block content
   .col-md-12(style="margin-bottom: 4%")
     .panel.panel-default
       .panel-heading
-        strong #{settings.locale.mn}
+        strong #{settings.locale.mn_title}
       table#masternodes-table.table.table-bordered.table-striped
         thead
           tr
-            th.text-center #{settings.locale.net_address}
-            th.text-center #{settings.locale.mn_pubkey}
-            th.text-center #{settings.locale.mn_status}
+            th.text-center #{settings.locale.mn_portscannerstatus}
+            th.text-center #{settings.locale.mn_ip}
+            th.text-center #{settings.locale.mn_protocol}
+            th.text-center #{settings.locale.mn_activeseconds}
+            th.text-center #{settings.locale.mn_lastseen}
+            th.text-center #{settings.locale.mn_message}
         tbody.text-center

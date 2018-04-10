@@ -34,7 +34,7 @@ block content
       );
     });
     $(window).resize(function () { 
-      pieWealthDist.replot( { resetAxes: false } );
+      if (pieWealthDist) pieWealthDist.replot( { resetAxes: false } );
     });  
   .col-xs-12.col-md-8
     .tabpanel

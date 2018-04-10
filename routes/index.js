@@ -1,11 +1,10 @@
-var express = require('express')
-  , router = express.Router()
-  , settings = require('../lib/settings')
-  , locale = require('../lib/locale')
-  , db = require('../lib/database')
-  , lib = require('../lib/explorer')
-  //, coinapi = require('../lib/coinapi')
-  , qr = require('qr-image');
+ var express = require('express'),
+     router = express.Router(),
+     settings = require('../lib/settings'),
+     locale = require('../lib/locale'),
+     db = require('../lib/database'),
+     lib = require('../lib/explorerapi'),
+     qr = require('qr-image');
 
 function route_get_block(res, blockhash) {
   lib.get_block(blockhash, function (block) {
@@ -282,19 +281,57 @@ router.get('/qr/:string', function(req, res) {
   }
 });
 
-//TODOTODO
+
+//TODOTODO masternodes-tab
 router.get('/masternodes', function(req, res) { //// modmod route to /views/masternode.jade
   if (settings.display.masternodes == true ) {
-    //res.render('masternodes', {active: 'masternodes'});
+    res.render('masternodes', {active: 'masternodes'}); // render masternodes.jade
+/*
+    lib.get_masternodelist_full(function(api_data){
+      console.log("ROUTEROUTE**************masternodeslist_xxxx:", api_data);
+      let mnlist = [];
+      Object.keys(api_data).forEach(function(e) {
+        let key = e;
+        let value = api_data[key];
+        console.log("ROUTEROUTE>>> ", value);
+        mnlist.push({'address': e, 'value': value});
+      });
+        //mnlist[i]['test'] = api_data[i]; // format_unixtime(json.data[i]['timestamp']);
+        //json.data[i]['timestamp'] = new Date((json.data[i]['timestamp']) * 1000).toUTCString();
 
-    lib.get_masternodelist_addr(function(masternodeslist_data){
-      console.log("**************masternodesonline:", masternodeslist_data);
+      res.render('masternodes', {active: 'masternodes', _fromRoutes__mn_list: mnlist, rawdata:api_data});
+    });
+*/
+
+  /*
+      Available modes:
+      activeseconds  - Print number of seconds masternode recognized by the network as enabled (since latest issued "masternode start/start-many/start-alias")
+      addr           - Print ip address associated with a masternode (can be additionally filtered, partial match)
+      full           - Print info in format 'status protocol payee lastseen activeseconds lastpaidtime lastpaidblock IP'
+      info           - Print info in format 'status protocol payee lastseen activeseconds sentinelversion sentinelstate IP'
+      lastpaidblock  - Print the last block height a node was paid on the network
+      lastpaidtime   - Print the last time a node was paid on the network
+      lastseen       - Print timestamp of when a masternode was last seen on the network
+      payee          - Print Sanity address associated with a masternode
+      protocol       - Print protocol of a masternode (can be additionally filtered, exact match)
+      pubkey         - Print the masternode (not collateral) public key
+      rank           - Print rank of a masternode based on current block
+      status         - Print masternode status: PRE_ENABLED / ENABLED / EXPIRED / WATCHDOG_EXPIRED / NEW_START_REQUIRED / UPDATE_REQUIRED / POSE_BAN / OUTPOINT_SPENT (can be additionally filtered, partial match)
       res.send({ data: [{
+        //full           - Print info in format '
+        status:  api_data[0],
+        protocol,
+        payee,
+        lastseen,
+        activeseconds,
+        lastpaidtime,
+        lastpaidblock,
+        IP
         //masternodeCountOnline: masternodesonline,
         //masternodeCountOffline: masternodesoffline,
       }]});
     });
-
+*/
   }
 });
 

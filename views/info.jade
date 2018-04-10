@@ -6,14 +6,13 @@ block content
       .panel-heading
         strong #{settings.locale.api_title}
       .panel-body
-        img(src='#{settings.logo}', style='margin:0;height:128px;')
         :markdown
           *#{settings.locale.api_message}*
 
           ------
 
           ### #{settings.locale.api_calls}
-          *Return data from sanityd*
+          *Return data from sanity-cli*
 
           *  **getdifficulty**
              *#{settings.locale.api_getdifficulty}*
@@ -26,11 +25,6 @@ block content
           *  **getmasternodecount**
              *#{settings.locale.api_getmasternodecount}*
              [#{address}/api/getmasternodecount](/api/getmasternodecount)
-
- *  **getmasternodelist**
-    *#{settings.locale.api_getmasternodelist}*
-    [#{address}/api/getmasternodelist](/api/getmasternodelist)
-
 
           *  **getblockcount**
              *#{settings.locale.api_getblockcount}*
@@ -55,10 +49,6 @@ block content
             *  **getnetworkhashps**
                *#{settings.locale.api_getnetworkhashps}*
                [#{address}/api/getnetworkhashps](/api/getnetworkhashps)
-
-            *  **getmasternodes**
-               *#{settings.locale.api_getmasternodes}*
-               [#{address}/api/getmasternodes](/api/getmasternodes)
 
         if settings.heavy == true
           :markdown
@@ -137,6 +127,16 @@ block content
 
           *  **qrcode (/qr/hash)**
              [#{address}/qr/#{hashes.address}](/qr/#{hashes.address})
+
+          ------
+
+          ### Masternodes
+          *List all masternodes*
+
+          *  **getmasternodelist_full (/ext/getmasternodelist_full)**
+          *Returns a list of all seen masternodes*
+          [#{address}/ext/getmasternodelist_full](/ext/getmasternodelist_full)
+
 
         p&nbsp;
         a(href="https://www.ubuntu.com/", target='_blank')

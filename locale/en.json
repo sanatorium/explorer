@@ -77,9 +77,15 @@
     "rl_top100": "Top 76-100",
     "rl_hundredplus": "101+",
 
-    "mn": "Masternodes",
-    "mn_pubkey": "Pubkey",
-    "mn_status": "Status",
+
+    //// modmod
+    "mn_title": "Masternodes",
+    "mn_ip": "Masternode IP",
+    "mn_message": "Status Message",
+    "mn_protocol": "Protocol Version",
+    "mn_lastseen": "Last Seen",
+    "mn_activeseconds": "Active Seconds",
+    "mn_portscannerstatus": "Port Check",
 
     "net_connections": "Connections",
     "net_address": "Address",

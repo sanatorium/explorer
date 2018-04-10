@@ -1,8 +1,8 @@
-var mongoose = require('mongoose')
-  , lib = require('../lib/explorer')
-  , db = require('../lib/database')
-  , settings = require('../lib/settings')
-  , request = require('request');
+var mongoose = require('mongoose'),
+    lib = require('../lib/explorerapi'),
+    db = require('../lib/database'),
+    settings = require('../lib/settings'),
+    request = require('request');
 
 var COUNT = 5000; //number of blocks to index
 

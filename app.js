@@ -1,7 +1,7 @@
 var express = require('express')
     path = require('path'),
-    chaincoinapi = require('./lib/coin-node-api'), //// modmod
-    //// bitcoinapi = require('bitcoin-node-api'), //// modmod
+    coinnodeapi = require('./lib/coin-node-api'), //// modmod
+    timeconvert = require('./lib/unixtime2date'), //// modmod
     RpcClient = require('node-json-rpc2').Client, //// modmod
     favicon = require('static-favicon'),
     logger = require('morgan'),
@@ -9,10 +9,10 @@ var express = require('express')
     bodyParser = require('body-parser'),
     settings = require('./lib/settings'),
     routes = require('./routes/index'),
-    lib = require('./lib/explorer'),
+    explorerapi = require('./lib/explorerapi'),
     db = require('./lib/database'),
     locale = require('./lib/locale'),
-    mn = require('./lib/masternode'),
+    checkport = require('./lib/portchecker'),
     request = require('request');
 
 var app = express();
@@ -20,14 +20,14 @@ var app = express();
 // bitcoinapi
 //// bitcoinapi.setWalletDetails(settings.wallet);
 
-// chaincoinapi
-chaincoinapi.setWalletDetails(settings.wallet);
+// coinnodeapi
+coinnodeapi.setWalletDetails(settings.wallet);
 
 // used for extending with masternode commmands
 var client = new RpcClient(settings.wallet); //// modmod
 
 if (settings.heavy != true) {
-  chaincoinapi.setAccess('only',
+  coinnodeapi.setAccess('only',
   [
     'getinfo',
     'getnetworkhashps',
@@ -66,7 +66,7 @@ if (settings.heavy != true) {
     getsupply - Returns the current money supply.
     getmaxmoney - Returns the maximum possible money supply.
   */
-  chaincoinapi.setAccess('only',
+  coinnodeapi.setAccess('only',
   [
     'getinfo',
     'getstakinginfo',
@@ -114,28 +114,122 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // routes
+/*
 app.use('/api/getmasternodes', function(req, res) { //// modmod
+  explorerapi.get_masternodelist_full(function(api_data){
+    console.log("**************masternodeslist_xxxx:", api_data);
+  });
   var mn = function(mnp) {
     client.call({method: 'masternode', params: mnp}, function(ierr, ires) {
       if (ierr) {
         console.log(ierr);
         return;
       }
+      console.log("############*masternodeslist_xxxx:", ires);
       res.send(ires.result);
     });
   }
+
   mn(
     [
       'list',
       'pubkey'
     ])
 });
-
-app.use('/api', chaincoinapi.app);
+*/
+app.use('/api', coinnodeapi.app);
 app.use('/', routes);
 
+/*
+}
+*/
+// request send from masternodes.jade
+app.use('/ext/getmasternodelist_full', function(req,res){
+    explorerapi.get_masternodelist_full(function(api_data){ // request to ./lib/explorerapi.js
+      // console.log("APPAPP*masternodeslist_full*:", api_data);
+      // return object "pubkey": "value" with value = "status protocol payee lastseen activeseconds lastpaidtime lastpaidblock IP"
+
+      /*
+      Available modes:
+      activeseconds  - Print number of seconds masternode recognized by the network as enabled (since latest issued "masternode start/start-many/start-alias")
+      addr           - Print ip address associated with a masternode (can be additionally filtered, partial match)
+      full           - Print info in format 'status protocol payee lastseen activeseconds lastpaidtime lastpaidblock IP'
+      info           - Print info in format 'status protocol payee lastseen activeseconds sentinelversion sentinelstate IP'
+      lastpaidblock  - Print the last block height a node was paid on the network
+      lastpaidtime   - Print the last time a node was paid on the network
+      lastseen       - Print timestamp of when a masternode was last seen on the network
+      payee          - Print Sanity address associated with a masternode
+      protocol       - Print protocol of a masternode (can be additionally filtered, exact match)
+      pubkey         - Print the masternode (not collateral) public key
+      rank           - Print rank of a masternode based on current block
+      status         - Print masternode status: PRE_ENABLED / ENABLED / EXPIRED / WATCHDOG_EXPIRED / NEW_START_REQUIRED / UPDATE_REQUIRED / POSE_BAN / OUTPOINT_SPENT (can be additionally filtered, partial match)
+      */
+
+      // push key/value-store to array
+      let mnlist = [];
+      Object.keys(api_data).forEach(function( key ) {
+        let valueraw = api_data[key]; // raw string with list of elements split by space: 'status protocol payee lastseen activeseconds lastpaidtime lastpaidblock IP'
+
+        if (typeof valueraw === 'string' || valueraw instanceof String) { // check for string
+          let valuearr = valueraw.toString().trim();
+          valuearr = ''+valuearr.replace(/ +(?= )/g,''); // replace multiple space with only one
+          valuearr = valuearr.toString().split(" ");
+
+          //console.log("APPAPP>>>key:: ", key);
+          //console.log("APPAPP>>>valraw:: ", valueraw);
+          //console.log("APPAPP>>>valarr:: ", valuearr);
+          //console.log("APPAPP>>>arrlen:: ", valuearr.length);
+
+          let convdate = timeconvert.unixtime2date(valuearr[3]);
+          let convsecs = timeconvert.seconds2days(valuearr[4]);
+          //console.log("APPAPP", valuearr[3], convdate);
+
+          mnlist.push({
+              'key': key,
+              'valueraw': valueraw,
+              'status': valuearr[0],
+              'protocol': valuearr[1],
+              'payee': valuearr[2],
+              'lastseen': valuearr[3],
+              'lastseenreadable': convdate,
+              'activeseconds': valuearr[4],
+              'activesecondsreadable': convsecs,
+              'lastpaidtime': valuearr[5],
+              'lastpaidblock': valuearr[6],
+              'ip': valuearr[7],
+          });
+        }
+      });
+      //mnlist[i]['test'] = api_data[i]; // format_unixtime(json.data[i]['timestamp']);
+      //json.data[i]['timestamp'] = new Date((json.data[i]['timestamp']) * 1000).toUTCString();
+      //console.log("APPAPP>>>arrlen:: ", mnlist.length);
+      if (mnlist === 0)
+      mnlist.push({
+          'key': '',
+          'valueraw': '',
+          'status': '',
+          'protocol': '',
+          'payee': '',
+          'lastseen': '',
+          'activeseconds': '',
+          'lastpaidtime': '',
+          'lastpaidblock': '',
+          'ip': '',
+      });
+      res.send( {data: mnlist} ); // return to masternode.jade
+    });
+});
+
+// request send from masternodes.jade to ping a masternode-ip
+app.use('/ext/checkport/:host/:port', function(req, res) { //// modmod
+  checkport.is_open(req.param('host'), req.param('port'), function(perror, pstatus) { // call
+    //console.log("checkport::", pstatus);
+    res.send(pstatus == 'open' ? 'true' : 'false'); // return true or false to masternode.jade
+  });
+});
+
 app.use('/ext/getmoneysupply', function(req,res){
-  lib.get_supply(function(supply){
+  explorerapi.get_supply(function(supply){
     res.send(' '+supply);
   });
 });
@@ -186,12 +280,6 @@ app.use('/ext/getlasttxs/:min', function(req,res){
 app.use('/ext/connections', function(req,res){
   db.get_peers(function(peers){
     res.send({data: peers});
-  });
-});
-
-app.use('/ext/ismasternodeopen/:host/:port', function(req, res) { //// modmod
-  mn.is_open(req.param('host'), req.param('port'), function(perror, pstatus) {
-    res.send(pstatus == 'open' ? 'true' : 'false');
   });
 });
 
