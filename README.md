@@ -3,16 +3,196 @@ Sanity Blockexplorer - 1.7.1
 
 The Sanity block explorer.
 
-### See it in action
+## see it in action
 
 *  [explorer.masternode.mn](https://explorer.masternode.mn)
 
-### Requires
+## requires
 
 *  node.js >= 0.10.28
 *  mongodb 2.6.x
 *  sanityd
 *  sanity-cli
+
+
+
+## install sanity wallet
+
+#### Wallet
+
+The wallet connected to the block explorer must be running with at least the following flags:
+
+    sanityd -daemon -txindex
+
+#### or in sanity.conf
+
+    txindex=1
+    deamon=1
+
+
+
+
+## install npm and node
+sudo apt-get update
+
+sudo apt-get install nodejs
+
+sudo apt-get install npm
+
+sudo apt install nodejs-legacy
+
+nodejs -v
+
+npm -v
+
+### update npm and node to latest stable
+sudo npm cache clean -f
+
+sudo npm install -g n
+
+sudo n stable
+
+nodejs -v
+
+npm -v
+
+
+
+
+## install mongodb
+sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
+
+echo "deb http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.2.list
+
+sudo apt-get update
+
+sudo apt-get install -y mongodb-org
+
+sudo nano /etc/systemd/system/mongodb.service
+
+	[Unit]
+	Description=High-performance, schema-free document-oriented database
+	After=network.target
+
+	[Service]
+	User=mongodb
+	ExecStart=/usr/bin/mongod --quiet --config /etc/mongod.conf
+
+	[Install]
+	WantedBy=multi-user.target
+
+#### start service
+sudo systemctl start mongodb
+
+#### check status
+sudo systemctl status mongodb
+
+#### enable permanently
+sudo systemctl enable mongodb
+
+### create database
+
+#### start mongo (cli)
+mongo
+
+#### create db
+    use explorerdb1
+
+#### create user
+    db.createUser( { user: "sanitydb1", pwd: "sanitydb1", roles: [ "readWrite" ] } )
+
+#### check user
+    db.getUsers()
+
+#### exit
+CTRL+c
+
+
+#### check mongo
+ps -ax | grep mongo
+
+
+
+## install explorer
+
+#### get the source
+
+cd
+
+git clone https://github.com/sanatorium/explorer
+
+#### install node modules
+cd explorer && npm install --production
+
+#### configure explorer
+
+cp ~/explorer/settings.json.template ~/explorer/settings.json
+
+nano ~/explorer/settings.json
+
+*Make required changes in settings.json*
+
+#### install forever
+sudo npm install forever --global
+
+sudo npm install forever-monitor
+
+
+
+#### testing only
+##### start without daemon
+cd ~/explorer && npm start
+##### or
+cd ~/explorer && sudo forever start bin/cluster
+
+##### to check
+forever list
+
+##### to view log
+forever logs
+
+##### to stop
+forever stop bin/cluster
+##### or
+forever stopall
+
+
+
+### update blockindex
+#### first index
+cd ~/explorer && node scripts/sync.js index reindex
+
+#### update manually
+cd explorer && node scripts/sync.js index update
+
+
+## make installation permanent
+
+#### edit crone for current user (i.e. sanitycore)
+crontab -e
+
+    @reboot sleep 15; /home/sanitycore/sanitybin/usr/local/bin/sanityd -daemon
+    @reboot cd /home/sanitycore/explorer && /usr/local/bin/forever start -a -c /usr/local/bin/node --plain --silent --minUptime 1000 --spinSleep 1000 bin/cluster
+    */1 * * * * cd /home/sanitycore/explorer && /usr/local/bin/node scripts/sync.js index update > /dev/null 2>&1
+    */2 * * * * cd /home/sanitycore/explorer && /usr/local/bin/node scripts/sync.js market > /dev/null 2>&1
+    */5 * * * * cd /home/sanitycore/explorer && /usr/local/bin/node scripts/peers.js > /dev/null 2>&1
+
+
+#### reboot vps
+sudo reboot
+
+
+
+
+
+
+
+
+##  --
+install mongod:
+sudo apt install mongodb-server
+
+mongod --dbpath ~/path/to/your/app/data
 
 ### Create database
 
