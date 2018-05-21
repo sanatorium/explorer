@@ -33,67 +33,66 @@ The wallet connected to the block explorer must be running with at least the fol
 
 
 ## install npm and node
-sudo apt-get update
+    sudo apt-get update
 
-sudo apt-get install nodejs
+    sudo apt-get install nodejs
 
-sudo apt-get install npm
+    sudo apt-get install npm
 
-sudo apt install nodejs-legacy
+    sudo apt install nodejs-legacy
 
-nodejs -v
+    nodejs -v
 
-npm -v
+    npm -v
 
 ### update npm and node to latest stable
-sudo npm cache clean -f
 
-sudo npm install -g n
+    sudo npm cache clean -f
 
-sudo n stable
+    sudo npm install -g n
 
-nodejs -v
+    sudo n stable
 
-npm -v
+    nodejs -v
 
-
+    npm -v
 
 
 ## install mongodb
-sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
+    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
 
-echo "deb http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.2.list
+    echo "deb http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.2.list
 
-sudo apt-get update
+    sudo apt-get update
 
-sudo apt-get install -y mongodb-org
+    sudo apt-get install -y mongodb-org
 
-sudo nano /etc/systemd/system/mongodb.service
+    sudo nano /etc/systemd/system/mongodb.service
 
-	[Unit]
-	Description=High-performance, schema-free document-oriented database
-	After=network.target
+    	[Unit]
+    	Description=High-performance, schema-free document-oriented database
+    	After=network.target
 
-	[Service]
-	User=mongodb
-	ExecStart=/usr/bin/mongod --quiet --config /etc/mongod.conf
+    	[Service]
+    	User=mongodb
+    	ExecStart=/usr/bin/mongod --quiet --config /etc/mongod.conf
 
-	[Install]
-	WantedBy=multi-user.target
+    	[Install]
+    	WantedBy=multi-user.target
 
 #### start service
-sudo systemctl start mongodb
+    sudo systemctl start mongodb
 
 #### check status
-sudo systemctl status mongodb
+    sudo systemctl status mongodb
 
 #### enable permanently
-sudo systemctl enable mongodb
+    sudo systemctl enable mongodb
 
 ### create database
 
 #### start mongo (cli)
-mongo
+    mongo
 
 #### create db
     use explorerdb1
@@ -105,11 +104,11 @@ mongo
     db.getUsers()
 
 #### exit
-CTRL+c
+    CTRL+c
 
 
 #### check mongo
-ps -ax | grep mongo
+    ps -ax | grep mongo
 
 
 
@@ -117,146 +116,105 @@ ps -ax | grep mongo
 
 #### get the source
 
-cd
+    cd
 
-git clone https://github.com/sanatorium/explorer
+    git clone https://github.com/sanatorium/explorer
 
 #### install node modules
-cd explorer && npm install --production
+    cd explorer && npm install --production
 
 #### configure explorer
 
-cp ~/explorer/settings.json.template ~/explorer/settings.json
+    cp ~/explorer/settings.json.template ~/explorer/settings.json
 
-nano ~/explorer/settings.json
+    nano ~/explorer/settings.json
 
 *Make required changes in settings.json*
 
 #### install forever
-sudo npm install forever --global
+    sudo npm install forever --global
 
-sudo npm install forever-monitor
+    sudo npm install forever-monitor
 
 
 
 #### testing only
 ##### start without daemon
-cd ~/explorer && npm start
+    cd ~/explorer && npm start
 ##### or
-cd ~/explorer && sudo forever start bin/cluster
+    cd ~/explorer && sudo forever start bin/cluster
 
 ##### to check
-forever list
+    forever list
 
 ##### to view log
-forever logs
+    forever logs
 
 ##### to stop
-forever stop bin/cluster
+    forever stop bin/cluster
 ##### or
-forever stopall
+    forever stopall
 
 
 
 ### update blockindex
 #### first index
-cd ~/explorer && node scripts/sync.js index reindex
+    cd ~/explorer && node scripts/sync.js index reindex
 
 #### update manually
-cd explorer && node scripts/sync.js index update
+    cd explorer && node scripts/sync.js index update
 
 
 ## make installation permanent
 
 #### edit crone for current user (i.e. sanitycore)
+
 crontab -e
 
-    @reboot sleep 15; /home/sanitycore/sanitybin/usr/local/bin/sanityd -daemon
+    # delete explorer lock on reboot
+    @reboot /home/sanitycore/explorer/tmp/index.pid > /dev/null 2>&1
+    # start sanity on reboot
+    @reboot sleep 15; /home/sanitycore/.sanitycore/sanityd -daemon -txindex
+    # start explorer on reboot
     @reboot cd /home/sanitycore/explorer && /usr/local/bin/forever start -a -c /usr/local/bin/node --plain --silent --minUptime 1000 --spinSleep 1000 bin/cluster
-    */1 * * * * cd /home/sanitycore/explorer && /usr/local/bin/node scripts/sync.js index update > /dev/null 2>&1
-    */2 * * * * cd /home/sanitycore/explorer && /usr/local/bin/node scripts/sync.js market > /dev/null 2>&1
-    */5 * * * * cd /home/sanitycore/explorer && /usr/local/bin/node scripts/peers.js > /dev/null 2>&1
-
+    # delete explorer lock every 59 min
+    */59 * * * * /home/sanitycore/explorer/tmp/index.pid > /dev/null 2>&1
+    # update blocks every 2 min
+    */2 * * * * cd /home/sanitycore/explorer && /usr/local/bin/node scripts/sync.js index update > /dev/null 2>&1
+    # update markets every 7 min
+    */7 * * * * cd /home/sanitycore/explorer && /usr/local/bin/node scripts/sync.js market > /dev/null 2>&1
+    # update network every 13 min
+    */13 * * * * cd /home/sanitycore/explorer && /usr/local/bin/node scripts/peers.js > /dev/null 2>&1
 
 #### reboot vps
-sudo reboot
+    sudo reboot
 
 
 
 
 
+## reference
 
-
-
-##  --
-install mongod:
-sudo apt install mongodb-server
-
-mongod --dbpath ~/path/to/your/app/data
-
-### Create database
-
-Enter MongoDB cli:
-
-    $ mongo
-
-Create databse:
-
-    > use explorerdb
-
-Create user with read/write access:
-
-    > db.createUser( { user: "db_username", pwd: "db_password", roles: [ "readWrite" ] } )
-
-### Get the source
-
-    git clone https://github.com/sanatorium/explorer explorer
-
-### Install node modules
-
-    cd explorer && npm install --production
-
-### Configure
-
-    cp ./settings.json.template ./settings.json
-
-*Make required changes in settings.json*
-
-### Start Explorer
-
-    npm start
-
-*note: mongod must be running to start the explorer*
-
-As of version 1.4.0 the explorer defaults to cluster mode, forking an instance of its process to each cpu core. This results in increased performance and stability. Load balancing gets automatically taken care of and any instances that for some reason die, will be restarted automatically. For testing/development (or if you just wish to) a single instance can be launched with
-
-    node --stack-size=10000 bin/instance
-
-To stop the cluster you can use
-
-    npm stop
-
-### Syncing databases with the blockchain
+### syncing databases with the blockchain
 
 sync.js (located in scripts/) is used for updating the local databases. This script must be called from the explorers root directory.
 
-    Usage: node scripts/sync.js [database] [mode]
+Usage: node scripts/sync.js [database] [mode]
 
-    database: (required)
-    index [mode] Main index: coin info/stats, transactions & addresses
-    market       Market data: summaries, orderbooks, trade history & chartdata
+database: (required)
+index [mode] Main index: coin info/stats, transactions & addresses
+market       Market data: summaries, orderbooks, trade history & chartdata
 
-    mode: (required for index database only)
-    update       Updates index from last sync to current block
-    check        checks index for (and adds) any missing transactions/addresses
-    reindex      Clears index then resyncs from genesis to current block
+mode: (required for index database only)
+update       Updates index from last sync to current block
+check        checks index for (and adds) any missing transactions/addresses
+reindex      Clears index then resyncs from genesis to current block
 
-    notes:
-    * 'current block' is the latest created block when script is executed.
-    * The market database only supports (& defaults to) reindex mode.
-    * If check mode finds missing data(ignoring new data since last sync),
-      index_timeout in settings.json is set too low.
-
+notes:
+* 'current block' is the latest created block when script is executed.
+* The market database only supports (& defaults to) reindex mode.
+* If check mode finds missing data(ignoring new data since last sync),
+  index_timeout in settings.json is set too low.
 
 *It is recommended to have this script launched via a cronjob at 1+ min intervals.*
 
@@ -276,15 +234,15 @@ The wallet connected to the block explorer must be running with at least the fol
 
     -daemon -txindex
 
-### Known Issues
+## Known Issues
 
-**script is already running.**
+### ***script is already running.*** message on sync
 
 If you receive this message when launching the sync script either a) a sync is currently in progress, or b) a previous sync was killed before it completed. If you are certian a sync is not in progress remove the index.pid from the tmp folder in the explorer root directory.
 
-    rm tmp/index.pid
+    rm /explorer/tmp/index.pid
 
-**exceeding stack size**
+### ***exceeding stack size***
 
     RangeError: Maximum call stack size exceeded
 
@@ -302,7 +260,7 @@ Where [SIZE] is an integer higher than the default.
 
 *note: SIZE will depend on which blockchain you are using, you may need to play around a bit to find an optimal setting*
 
-### License
+## License
 
 Copyright (c) 2018, The Sanitycore Developers  
 Copyright (c) 2017, The Chaincoin Community  
